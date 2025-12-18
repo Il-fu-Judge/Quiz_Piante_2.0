@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -8,7 +7,8 @@
     <style>
         :root {
             --primary-green: #2d5a27;
-            --error-red: #c0392b;
+            --btn-blue: #3498db;
+            --btn-orange: #f39c12;
             --bg-color: #e8f0e8;
         }
 
@@ -22,12 +22,13 @@
             justify-content: center;
             height: 100vh;
             overflow: hidden;
+            transition: background-color 0.3s;
         }
 
         /* Schermata di Start */
         #start-screen {
             position: absolute;
-            z-index: 10;
+            z-index: 100;
             background: white;
             width: 100%;
             height: 100%;
@@ -38,39 +39,49 @@
             text-align: center;
         }
 
-        .btn-start {
-            padding: 20px 40px;
-            font-size: 1.5rem;
-            background-color: var(--primary-green);
+        /* Area Gioco */
+        #game-area {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-weight: bold;
+            color: var(--primary-green);
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1rem;
             color: white;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        /* Area Gioco */
-        #game-area {
-            display: none; /* Nascosta all'inizio */
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .score-board {
-            font-size: 1.2rem;
             font-weight: bold;
-            margin-bottom: 10px;
-            color: var(--primary-green);
+            width: 100%;
+            margin: 5px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
+
+        .btn-start { background-color: var(--primary-green); font-size: 1.5rem; }
+        .btn-mic { background-color: var(--btn-blue); }
+        .btn-skip { background-color: var(--btn-orange); }
 
         .card-container {
-            width: 300px;
-            height: 400px;
+            width: 100%;
+            aspect-ratio: 3/4;
             background: white;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .card-container img {
@@ -79,23 +90,14 @@
             object-fit: cover;
         }
 
-        .mic-status {
-            padding: 10px 20px;
-            border-radius: 20px;
-            background: #ddd;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
-
         .mic-active {
-            background: #e74c3c;
-            color: white;
+            background-color: #e74c3c !important;
             animation: pulse 1.5s infinite;
         }
 
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.02); }
             100% { transform: scale(1); }
         }
 
@@ -105,22 +107,28 @@
 <body>
 
     <div id="start-screen">
-        <h1 style="color: var(--primary-green)">Botanica Voice Challenge</h1>
-        <p>Pronuncia il nome in latino per continuare!</p>
-        <button class="btn-start" onclick="startGame()">INIZIA GIOCO</button>
+        <h1 style="color: var(--primary-green)">Botanica Voice</h1>
+        <p>Premi il tasto blu per parlare.<br>Hai <b>5 salti</b> a disposizione.</p>
+        <button class="btn btn-start" onclick="startGame()">INIZIA GIOCO</button>
     </div>
 
     <div id="game-area">
-        <div class="score-board">Punteggio: <span id="score">0</span></div>
+        <div class="stats">
+            <div>Punti: <span id="score">0</span></div>
+            <div>Salti: <span id="skips">5</span></div>
+        </div>
+
         <div class="card-container">
             <img id="imageDisplay" src="" alt="Pianta">
         </div>
-        <div id="micStatus" class="mic-status">Ascoltando...</div>
-        <p id="transcript" style="margin-top: 10px; color: #666; font-style: italic;">Sussurra il nome...</p>
+
+        <button id="micBtn" class="btn btn-mic" onclick="toggleListening()">🎤 CLICCA E PARLA</button>
+        <button class="btn btn-skip" onclick="useSkip()">SALTA PIANTA</button>
+        
+        <p id="transcript" style="margin-top: 10px; color: #666; font-style: italic; text-align: center;">In attesa...</p>
     </div>
 
     <script>
-        // Database (usa lo stesso che hai già)
         const pianteOriginali = [
             { latino: "Abelia Grandiflora", img: "img/abelia_grandiflora.jpg" },
             { latino: "Agapanthus Umbrellatus", img: "img/agapanthus_umbrellatus.jpg" },
@@ -186,19 +194,22 @@
             { latino: "Viburnum Carlesii", img: "img/viburnum_carlesii.jpg" },
             { latino: "Viburnum Rytidophyllum", img: "img/viburnum_rytidophyllum.jpg" },
             { latino: "Viburnum Tinus", img: "img/viburnum_tinus.jpg" },
-            { latino: "Weigela", img: "img/weigela.jpg" },
+            { latino: "Weigela", img: "img/weigela.jpg" }
         ];
 
         let mazzo = [];
         let currentPlant = null;
         let score = 0;
+        let skips = 5;
         let recognition;
+        let isListening = false;
 
-        // Inizializzazione Riconoscimento Vocale
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
+        // Inizializzazione Vocale
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
             recognition.continuous = false;
-            recognition.lang = 'it-IT'; // Italiano è il più vicino al latino per fonetica
+            recognition.lang = 'it-IT';
             recognition.interimResults = false;
 
             recognition.onresult = (event) => {
@@ -207,77 +218,8 @@
                 checkAnswer(speechResult);
             };
 
-            recognition.onerror = (event) => {
-                console.error("Errore vocale:", event.error);
-                if(event.error !== 'no-speech') startListening();
-            };
-
             recognition.onend = () => {
-                // Riavvia l'ascolto se il gioco è ancora attivo
-                if (document.getElementById('game-area').style.display === 'flex') {
-                    startListening();
-                }
-            };
-        }
-
-        function startGame() {
-            score = 0;
-            document.getElementById('score').textContent = score;
-            mazzo = [...pianteOriginali].sort(() => Math.random() - 0.5);
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('game-area').style.display = 'flex';
-            nextQuestion();
-        }
-
-        function nextQuestion() {
-            if (mazzo.length === 0) {
-                alert("Complimenti! Hai completato tutte le piante!");
-                gameOver();
-                return;
-            }
-            currentPlant = mazzo.pop();
-            document.getElementById('imageDisplay').src = currentPlant.img;
-            document.getElementById('transcript').textContent = "In attesa della tua voce...";
-            startListening();
-        }
-
-        function startListening() {
-            try {
-                recognition.start();
-                document.getElementById('micStatus').classList.add('mic-active');
-                document.getElementById('micStatus').textContent = "🎤 Parla ora...";
-            } catch (e) {
-                // Già attivo
-            }
-        }
-
-        function checkAnswer(result) {
-            const correctName = currentPlant.latino.toLowerCase();
-            
-            // Verifichiamo se il nome pronunciato è contenuto o simile
-            if (result.includes(correctName) || correctName.includes(result)) {
-                score++;
-                document.getElementById('score').textContent = score;
-                // Feedback visivo flash verde
-                document.body.style.backgroundColor = "#2ecc71";
-                setTimeout(() => {
-                    document.body.style.backgroundColor = "var(--bg-color)";
-                    nextQuestion();
-                }, 1000);
-            } else {
-                // SBAGLIATO
-                document.body.style.backgroundColor = "#e74c3c";
-                alert("SBAGLIATO! Era: " + currentPlant.latino + "\nPunteggio finale: " + score);
-                gameOver();
-            }
-        }
-
-        function gameOver() {
-            recognition.stop();
-            document.body.style.backgroundColor = "var(--bg-color)";
-            document.getElementById('game-area').style.display = 'none';
-            document.getElementById('start-screen').classList.remove('hidden');
-        }
-    </script>
-</body>
-</html>
+                isListening = false;
+                const micBtn = document.getElementById('micBtn');
+                micBtn.classList.remove('mic-active');
+                micBtn.textContent = "🎤 CLICCA E PARLA";
