@@ -9,7 +9,6 @@
             --primary-green: #2d5a27;
             --btn-orange: #f39c12;
             --btn-blue: #3498db;
-            --error-red: #c0392b;
             --bg-color: #e8f0e8;
         }
 
@@ -23,7 +22,6 @@
             justify-content: center;
             height: 100vh;
             overflow: hidden;
-            transition: background-color 0.3s;
         }
 
         #start-screen {
@@ -38,7 +36,6 @@
             justify-content: center;
             text-align: center;
             padding: 20px;
-            box-sizing: border-box;
         }
 
         #game-area {
@@ -56,19 +53,15 @@
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             font-weight: bold;
-            transition: all 0.2s;
             width: 100%;
-            max-width: 250px;
             margin: 10px 0;
-            text-transform: uppercase;
         }
 
         .btn-start { background-color: var(--primary-green); }
         .btn-guess { background-color: var(--btn-blue); }
         .btn-skip { background-color: var(--btn-orange); }
-        
+
         .stats-container {
             display: flex;
             justify-content: space-between;
@@ -96,21 +89,13 @@
         }
 
         .mic-active {
-            background-color: var(--error-red) !important;
+            background-color: #e74c3c !important;
             animation: pulse 1.5s infinite;
-        }
-
-        #transcript {
-            margin-top: 5px;
-            color: #555;
-            font-style: italic;
-            min-height: 1.5em;
-            text-align: center;
         }
 
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
+            50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
 
@@ -120,8 +105,8 @@
 <body>
 
     <div id="start-screen">
-        <h1 style="color: var(--primary-green);">Botanica Voice</h1>
-        <p>Premi il tasto "Indovina" per parlare.<br>Hai <b>5 salti</b> automatici.</p>
+        <h1 style="color: var(--primary-green);">Botanica Voice Challenge</h1>
+        <p>Premi <b>INDOVINA</b> per parlare.<br>Hai <b>5 salti</b> automatici.</p>
         <button class="btn btn-start" onclick="startGame()">INIZIA GIOCO</button>
     </div>
 
@@ -135,13 +120,14 @@
             <img id="imageDisplay" src="" alt="Pianta">
         </div>
 
-        <button id="guessBtn" class="btn btn-guess" onclick="startGuessing()">🎤 INDOVINA</button>
-        <button id="skipBtn" class="btn btn-skip" onclick="handleError()">SALTA PIANTA</button>
+        <button id="guessBtn" class="btn btn-guess" onclick="startListening()">🎤 INDOVINA</button>
+        <button id="skipBtn" class="btn btn-skip" onclick="manualSkip()">SALTA PIANTA</button>
         
-        <p id="transcript">Clicca per parlare</p>
+        <p id="transcript" style="text-align: center; font-style: italic; margin-top: 10px;">Clicca per parlare</p>
     </div>
 
     <script>
+        // --- DATASET ---
         const pianteOriginali = [
             { latino: "Abelia Grandiflora", img: "img/abelia_grandiflora.jpg" },
             { latino: "Agapanthus Umbrellatus", img: "img/agapanthus_umbrellatus.jpg" },
@@ -160,4 +146,120 @@
             { latino: "Carex Oshimensis", img: "img/carex_oshimensis.jpg" },
             { latino: "Digitalis Ferruginea", img: "img/digitalis_ferruginea.jpg" },
             { latino: "Echinacea Purpurea", img: "img/echinacea_purpurea.jpg" },
-            { latino: "Ele
+            { latino: "Eleagnus Ebbingei", img: "img/eleagnus_ebbingei.jpg" },
+            { latino: "Erica X Darleyensis", img: "img/erica_x_darleyensis.jpg" },
+            { latino: "Euonymus Alatus", img: "img/euonymus_alatus.jpg" },
+            { latino: "Euonymus Fortunei", img: "img/euonymus_fortunei.jpg" },
+            { latino: "Euonymus Japonicus", img: "img/euonymus_japonicus.jpg" },
+            { latino: "Euonymus Japonicus Pulchellus", img: "img/euonymus_japonicus_pulchellus.jpg" },
+            { latino: "Forsythia", img: "img/forsythia.jpg" },
+            { latino: "Gaura Lindheimeri", img: "img/gaura_lindheimeri.jpg" },
+            { latino: "Hydrangea Arborescens", img: "img/hydrangea_arborescens.jpg" },
+            { latino: "Hydrangea Aspera Sargentiana", img: "img/hydrangea_aspera_sargentiana.jpg" },
+            { latino: "Hydrangea Macrophylla", img: "img/hydrangea_macrophylla.jpg" },
+            { latino: "Hydrangea Paniculata", img: "img/hydrangea_paniculata.jpg" },
+            { latino: "Hydrangea Quercifolia", img: "img/hydrangea_quercifolia.jpg" },
+            { latino: "Hydrangea Serrata", img: "img/hydrangea_serrata.jpg" },
+            { latino: "Ilex Acquifolium", img: "img/ilex_acquifolium.jpg" },
+            { latino: "Ilex Crenata", img: "img/ilex_crenata.jpg" },
+            { latino: "Kniphofia Uvaria", img: "img/kniphofia_uvaria.jpg" },
+            { latino: "Lagerstroemia Indica", img: "img/lagerstroemia_indica.jpg" },
+            { latino: "Laurus Nobilis", img: "img/laurus_nobilis.jpg" },
+            { latino: "Ligustrum Lucidum", img: "img/ligustrum_lucidum.jpg" },
+            { latino: "Lonicera Pileata", img: "img/lonicera_pileata.jpg" },
+            { latino: "Miscanthus Gracillimus", img: "img/miscanthus_gracillimus.jpg" },
+            { latino: "Miscanthus Kleine Silberspinne", img: "img/miscanthus_kleine_silberspinne.jpg" },
+            { latino: "Nassella Tenuifolia", img: "img/nassella_tenuifolia.jpg" },
+            { latino: "Nepeta Faasenii", img: "img/nepeta_faasenii.jpg" },
+            { latino: "Osmanthus Acuifolium", img: "img/osmanthus_acuifolium.jpg" },
+            { latino: "Osmanthus Fragrance", img: "img/osmanthus_fragrance.jpg" },
+            { latino: "Osmanthus Fragrance Aurantiacus", img: "img/osmanthus_fragrance_aurantiacus.jpg" },
+            { latino: "Osmanthus Ilicifolium", img: "img/osmanthus_ilicifolium.jpg" },
+            { latino: "Pennisetum Alopecuroides", img: "img/pennisetum_alopecuroides.jpg" },
+            { latino: "Pieris Japonica", img: "img/pieris_japonica.jpg" },
+            { latino: "Pittosporum Heterophyllum", img: "img/pittosporum_heterophyllum.jpg" },
+            { latino: "Pittosporum Tenuifolium", img: "img/pittosporum_tenuifolium.jpg" },
+            { latino: "Pittosporum Tobira", img: "img/pittosporum_tobira.jpg" },
+            { latino: "Pittosporum Tobira Nanum", img: "img/pittosporum_tobira_nanum.jpg" },
+            { latino: "Prunus Cerasifera Nigra Pissardi", img: "img/prunus_cerasifera_nigra_pissardi.jpg" },
+            { latino: "Prunus Laurocerasus", img: "img/prunus_laurocerasus.jpg" },
+            { latino: "Prunus Lusitanica", img: "img/prunus_lusitanica.jpg" },
+            { latino: "Rhododendron Indicum", img: "img/rhododendron_indicum.jpg" },
+            { latino: "Rhododendron Mollis", img: "img/rhododendron_mollis.jpg" },
+            { latino: "Rudbeckia", img: "img/rudbeckia.jpg" },
+            { latino: "Salvia Microphylla", img: "img/salvia_microphylla.jpg" },
+            { latino: "Spirea Japonica", img: "img/spirea_japonica.jpg" },
+            { latino: "Verbena Bonariensis", img: "img/verbena_bonariensis.jpg" },
+            { latino: "Viburnum Carlesii", img: "img/viburnum_carlesii.jpg" },
+            { latino: "Viburnum Rytidophyllum", img: "img/viburnum_rytidophyllum.jpg" },
+            { latino: "Viburnum Tinus", img: "img/viburnum_tinus.jpg" },
+            { latino: "Weigela", img: "img/weigela.jpg" }
+        ];
+
+        let mazzo = [];
+        let currentPlant = null;
+        let score = 0;
+        let skipsLeft = 5;
+        let recognition;
+
+        // --- INIZIALIZZAZIONE VOCALE (Solo se supportata) ---
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'it-IT';
+            recognition.interimResults = false;
+
+            recognition.onresult = (event) => {
+                const result = event.results[0][0].transcript.toLowerCase();
+                document.getElementById('transcript').textContent = "Hai detto: " + result;
+                checkAnswer(result);
+            };
+
+            recognition.onend = () => {
+                document.getElementById('guessBtn').classList.remove('mic-active');
+                document.getElementById('guessBtn').textContent = "🎤 INDOVINA";
+            };
+
+            recognition.onerror = () => {
+                document.getElementById('transcript').textContent = "Errore. Riprova.";
+            };
+        }
+
+        // --- FUNZIONI DI GIOCO ---
+        function startGame() {
+            score = 0;
+            skipsLeft = 5;
+            document.getElementById('score').textContent = score;
+            document.getElementById('skips').textContent = skipsLeft;
+            
+            mazzo = [...pianteOriginali].sort(() => Math.random() - 0.5);
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-area').style.display = 'flex';
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            if (mazzo.length === 0) {
+                alert("Hai finito tutte le piante!");
+                location.reload();
+                return;
+            }
+            currentPlant = mazzo.pop();
+            document.getElementById('imageDisplay').src = currentPlant.img;
+            document.getElementById('transcript').textContent = "Premi Indovina e parla";
+        }
+
+        function startListening() {
+            if (!recognition) return alert("Browser non supportato");
+            try {
+                recognition.start();
+                document.getElementById('guessBtn').classList.add('mic-active');
+                document.getElementById('guessBtn').textContent = "🔴 TI ASCOLTO...";
+            } catch(e) {}
+        }
+
+        function checkAnswer(said) {
+            const correct = currentPlant.latino.toLowerCase();
+            // Stessa logica di confronto del tuo codice originale
+            if (said
