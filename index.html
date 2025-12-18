@@ -21,58 +21,24 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            overflow: hidden;
-            transition: background-color 0.3s;
+            user-select: none;
         }
 
-        /* Schermata di Start */
         #start-screen {
             position: absolute;
             z-index: 100;
             background: white;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
         }
 
-        /* Area Gioco */
         #game-area {
             display: none;
             flex-direction: column;
             align-items: center;
-            width: 90%;
-            max-width: 400px;
+            width: 90%; max-width: 400px;
         }
-
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            font-weight: bold;
-            color: var(--primary-green);
-            margin-bottom: 10px;
-        }
-
-        .btn {
-            padding: 15px 30px;
-            font-size: 1.1rem;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            margin: 5px 0;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .btn-start { background-color: var(--primary-green); font-size: 1.5rem; }
-        .btn-mic { background-color: var(--btn-blue); }
-        .btn-skip { background-color: var(--btn-orange); }
 
         .card-container {
             width: 100%;
@@ -81,24 +47,41 @@
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             overflow: hidden;
-            margin-bottom: 15px;
+            margin: 15px 0;
         }
 
-        .card-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .card-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* PULSANTE PUSH-TO-TALK */
+        #micBtn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--btn-blue);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+            transition: transform 0.1s, background-color 0.3s;
+            touch-action: manipulation;
+            font-size: 1rem;
         }
 
-        .mic-active {
-            background-color: #e74c3c !important;
-            animation: pulse 1.5s infinite;
+        #micBtn.active {
+            background-color: #e74c3c;
+            transform: scale(0.9);
+            box-shadow: 0 0 20px #e74c3c;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
+        .btn-skip {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: var(--btn-orange);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: bold;
         }
 
         .hidden { display: none !important; }
@@ -108,24 +91,31 @@
 
     <div id="start-screen">
         <h1 style="color: var(--primary-green)">Botanica Voice</h1>
-        <p>Premi il tasto blu per parlare.<br>Hai <b>5 salti</b> a disposizione.</p>
-        <button class="btn btn-start" onclick="startGame()">INIZIA GIOCO</button>
+        <p>Tieni PREMUTO il cerchio blu per parlare</p>
+        <button style="padding: 15px 30px; background: var(--primary-green); color: white; border: none; border-radius: 50px; font-size: 1.2rem;" onclick="startGame()">INIZIA</button>
     </div>
 
     <div id="game-area">
-        <div class="stats">
-            <div>Punti: <span id="score">0</span></div>
-            <div>Salti: <span id="skips">5</span></div>
+        <div style="width: 100%; display: flex; justify-content: space-between; font-weight: bold;">
+            <span>Punti: <span id="score">0</span></span>
+            <span>Salti: <span id="skips">5</span></span>
         </div>
 
         <div class="card-container">
             <img id="imageDisplay" src="" alt="Pianta">
         </div>
 
-        <button id="micBtn" class="btn btn-mic" onclick="toggleListening()">🎤 CLICCA E PARLA</button>
-        <button class="btn btn-skip" onclick="useSkip()">SALTA PIANTA</button>
+        <button id="micBtn" 
+                onmousedown="startListen()" 
+                onmouseup="stopListen()" 
+                ontouchstart="startListen()" 
+                ontouchend="stopListen()">
+            TIENI PER<br>PARLARE
+        </button>
+
+        <p id="transcript" style="margin-top: 15px; color: #555; text-align: center; min-height: 1.2em;"></p>
         
-        <p id="transcript" style="margin-top: 10px; color: #666; font-style: italic; text-align: center;">In attesa...</p>
+        <button class="btn-skip" onclick="handleError('SALTO')">SALTA PIANTA</button>
     </div>
 
     <script>
@@ -200,26 +190,61 @@
         let mazzo = [];
         let currentPlant = null;
         let score = 0;
-        let skips = 5;
+        let skipsLeft = 5;
         let recognition;
-        let isListening = false;
+        let canProcess = false;
 
-        // Inizializzazione Vocale
+        // Setup Riconoscimento
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
-            recognition.continuous = false;
             recognition.lang = 'it-IT';
+            recognition.continuous = true; // Resta "caldo"
             recognition.interimResults = false;
 
             recognition.onresult = (event) => {
-                const speechResult = event.results[0][0].transcript.toLowerCase();
-                document.getElementById('transcript').textContent = "Hai detto: " + speechResult;
-                checkAnswer(speechResult);
+                if (!canProcess) return; // Se il tasto non è premuto, ignora
+                const result = event.results[event.results.length - 1][0].transcript.toLowerCase();
+                document.getElementById('transcript').textContent = "Hai detto: " + result;
+                checkAnswer(result);
             };
+        }
 
-            recognition.onend = () => {
-                isListening = false;
-                const micBtn = document.getElementById('micBtn');
-                micBtn.classList.remove('mic-active');
-                micBtn.textContent = "🎤 CLICCA E PARLA";
+        function startGame() {
+            score = 0; skipsLeft = 5;
+            mazzo = [...pianteOriginali].sort(() => Math.random() - 0.5);
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-area').style.display = 'flex';
+            
+            // Accendiamo il microfono una volta sola all'inizio
+            try { recognition.start(); } catch(e) {}
+            
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            if (mazzo.length === 0) { alert("Finito!"); location.reload(); return; }
+            currentPlant = mazzo.pop();
+            document.getElementById('imageDisplay').src = currentPlant.img;
+            document.getElementById('score').textContent = score;
+            document.getElementById('skips').textContent = skipsLeft;
+            document.getElementById('transcript').textContent = "";
+        }
+
+        function startListen() {
+            canProcess = true;
+            document.getElementById('micBtn').classList.add('active');
+            document.getElementById('micBtn').textContent = "ASCOLTO...";
+        }
+
+        function stopListen() {
+            canProcess = false;
+            document.getElementById('micBtn').classList.remove('active');
+            document.getElementById('micBtn').textContent = "TIENI PER PARLARE";
+        }
+
+        function checkAnswer(said) {
+            const correct = currentPlant.latino.toLowerCase();
+            if (said.includes(correct) || correct.includes(said)) {
+                score++;
+                document.body.style.backgroundColor = "#2ecc71
