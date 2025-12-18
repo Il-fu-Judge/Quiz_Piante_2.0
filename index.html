@@ -8,6 +8,7 @@
         :root {
             --primary-green: #2d5a27;
             --btn-orange: #f39c12;
+            --btn-blue: #3498db;
             --error-red: #c0392b;
             --bg-color: #e8f0e8;
         }
@@ -59,13 +60,17 @@
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             font-weight: bold;
-            transition: transform 0.2s;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 250px;
+            margin: 10px 0;
         }
 
         .btn:active { transform: scale(0.95); }
 
         .btn-start { background-color: var(--primary-green); }
-        .btn-skip { background-color: var(--btn-orange); margin-top: 15px; }
+        .btn-guess { background-color: var(--btn-blue); }
+        .btn-skip { background-color: var(--btn-orange); }
         .btn-skip:disabled { background-color: #bdc3c7; cursor: not-allowed; box-shadow: none; }
 
         /* Statistiche */
@@ -83,7 +88,7 @@
         .card-container {
             width: 100%;
             aspect-ratio: 3/4;
-            max-height: 400px;
+            max-height: 350px;
             background: white;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
@@ -98,32 +103,23 @@
         }
 
         /* Feedback Vocale */
-        .mic-status {
-            padding: 8px 15px;
-            border-radius: 20px;
-            background: #ddd;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
-
         .mic-active {
-            background: #e74c3c;
-            color: white;
+            background: var(--error-red) !important;
             animation: pulse 1.5s infinite;
         }
 
         #transcript {
-            margin-top: 10px;
+            margin-top: 5px;
             color: #555;
             font-style: italic;
             min-height: 1.5em;
             text-align: center;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
 
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.03); }
             100% { transform: scale(1); }
         }
 
@@ -134,24 +130,24 @@
 
     <div id="start-screen">
         <h1 style="color: var(--primary-green); margin-bottom: 10px;">Botanica Voice Challenge</h1>
-        <p style="margin-bottom: 30px;">Pronuncia il nome in latino.<br>Hai <b>3 salti</b> a disposizione!</p>
+        <p style="margin-bottom: 30px;">Guarda la pianta e premi il tasto per indovinare.<br>Hai <b>5 salti</b> automatici!</p>
         <button class="btn btn-start" onclick="startGame()">INIZIA GIOCO</button>
     </div>
 
     <div id="game-area">
         <div class="stats-container">
             <div>Punti: <span id="score">0</span></div>
-            <div>Salti: <span id="skips">3</span></div>
+            <div>Salti: <span id="skips">5</span></div>
         </div>
 
         <div class="card-container">
             <img id="imageDisplay" src="" alt="Pianta">
         </div>
 
-        <div id="micStatus" class="mic-status">Attivazione microfono...</div>
-        <p id="transcript">Ti ascolto...</p>
+        <button id="guessBtn" class="btn btn-guess" onclick="startGuessing()">🎤 INDOVINA</button>
+        <button id="skipBtn" class="btn btn-skip" onclick="manualSkip()">SALTA PIANTA</button>
         
-        <button id="skipBtn" class="btn btn-skip" onclick="skipPlant()">SALTA PIANTA</button>
+        <p id="transcript">Clicca "Indovina" per parlare</p>
     </div>
 
     <script>
@@ -185,182 +181,4 @@
             { latino: "Hydrangea Aspera Sargentiana", img: "img/hydrangea_aspera_sargentiana.jpg" },
             { latino: "Hydrangea Macrophylla", img: "img/hydrangea_macrophylla.jpg" },
             { latino: "Hydrangea Paniculata", img: "img/hydrangea_paniculata.jpg" },
-            { latino: "Hydrangea Quercifolia", img: "img/hydrangea_quercifolia.jpg" },
-            { latino: "Hydrangea Serrata", img: "img/hydrangea_serrata.jpg" },
-            { latino: "Ilex Acquifolium", img: "img/ilex_acquifolium.jpg" },
-            { latino: "Ilex Crenata", img: "img/ilex_crenata.jpg" },
-            { latino: "Kniphofia Uvaria", img: "img/kniphofia_uvaria.jpg" },
-            { latino: "Lagerstroemia Indica", img: "img/lagerstroemia_indica.jpg" },
-            { latino: "Laurus Nobilis", img: "img/laurus_nobilis.jpg" },
-            { latino: "Ligustrum Lucidum", img: "img/ligustrum_lucidum.jpg" },
-            { latino: "Lonicera Pileata", img: "img/lonicera_pileata.jpg" },
-            { latino: "Miscanthus Gracillimus", img: "img/miscanthus_gracillimus.jpg" },
-            { latino: "Miscanthus Kleine Silberspinne", img: "img/miscanthus_kleine_silberspinne.jpg" },
-            { latino: "Nassella Tenuifolia", img: "img/nassella_tenuifolia.jpg" },
-            { latino: "Nepeta Faasenii", img: "img/nepeta_faasenii.jpg" },
-            { latino: "Osmanthus Acuifolium", img: "img/osmanthus_acuifolium.jpg" },
-            { latino: "Osmanthus Fragrance", img: "img/osmanthus_fragrance.jpg" },
-            { latino: "Osmanthus Fragrance Aurantiacus", img: "img/osmanthus_fragrance_aurantiacus.jpg" },
-            { latino: "Osmanthus Ilicifolium", img: "img/osmanthus_ilicifolium.jpg" },
-            { latino: "Pennisetum Alopecuroides", img: "img/pennisetum_alopecuroides.jpg" },
-            { latino: "Pieris Japonica", img: "img/pieris_japonica.jpg" },
-            { latino: "Pittosporum Heterophyllum", img: "img/pittosporum_heterophyllum.jpg" },
-            { latino: "Pittosporum Tenuifolium", img: "img/pittosporum_tenuifolium.jpg" },
-            { latino: "Pittosporum Tobira", img: "img/pittosporum_tobira.jpg" },
-            { latino: "Pittosporum Tobira Nanum", img: "img/pittosporum_tobira_nanum.jpg" },
-            { latino: "Prunus Cerasifera Nigra Pissardi", img: "img/prunus_cerasifera_nigra_pissardi.jpg" },
-            { latino: "Prunus Laurocerasus", img: "img/prunus_laurocerasus.jpg" },
-            { latino: "Prunus Lusitanica", img: "img/prunus_lusitanica.jpg" },
-            { latino: "Rhododendron Indicum", img: "img/rhododendron_indicum.jpg" },
-            { latino: "Rhododendron Mollis", img: "img/rhododendron_mollis.jpg" },
-            { latino: "Rudbeckia", img: "img/rudbeckia.jpg" },
-            { latino: "Salvia Microphylla", img: "img/salvia_microphylla.jpg" },
-            { latino: "Spirea Japonica", img: "img/spirea_japonica.jpg" },
-            { latino: "Verbena Bonariensis", img: "img/verbena_bonariensis.jpg" },
-            { latino: "Viburnum Carlesii", img: "img/viburnum_carlesii.jpg" },
-            { latino: "Viburnum Rytidophyllum", img: "img/viburnum_rytidophyllum.jpg" },
-            { latino: "Viburnum Tinus", img: "img/viburnum_tinus.jpg" },
-            { latino: "Weigela", img: "img/weigela.jpg" }
-        ];
-
-        let mazzo = [];
-        let currentPlant = null;
-        let score = 0;
-        let skipsLeft = 3;
-        let recognition;
-        let isGameActive = false;
-
-        // Configurazione Riconoscimento Vocale
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.lang = 'it-IT'; // Fonetica più vicina al latino botanico
-            recognition.interimResults = false;
-
-            recognition.onresult = (event) => {
-                const result = event.results[0][0].transcript.toLowerCase();
-                document.getElementById('transcript').textContent = "Hai detto: " + result;
-                checkAnswer(result);
-            };
-
-            recognition.onerror = (e) => {
-                if (e.error === 'not-allowed') alert("Permesso microfono negato!");
-            };
-
-            recognition.onend = () => {
-                if (isGameActive) startListening();
-            };
-        } else {
-            alert("Il tuo browser non supporta il riconoscimento vocale. Usa Chrome o Safari.");
-        }
-
-        function startGame() {
-            score = 0;
-            skipsLeft = 3;
-            isGameActive = true;
-            document.getElementById('score').textContent = score;
-            document.getElementById('skips').textContent = skipsLeft;
-            document.getElementById('skipBtn').disabled = false;
-            
-            mazzo = [...pianteOriginali].sort(() => Math.random() - 0.5);
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('game-area').style.display = 'flex';
-            nextQuestion();
-        }
-
-        function nextQuestion() {
-            if (mazzo.length === 0) {
-                alert("STRAORDINARIO! Hai riconosciuto tutte le piante!");
-                gameOver();
-                return;
-            }
-            currentPlant = mazzo.pop();
-            document.getElementById('imageDisplay').src = currentPlant.img;
-            document.getElementById('transcript').textContent = "In attesa della tua voce...";
-            startListening();
-        }
-
-        function startListening() {
-            try {
-                recognition.start();
-                document.getElementById('micStatus').textContent = "🎤 Parla ora...";
-                document.getElementById('micStatus').classList.add('mic-active');
-            } catch (e) {}
-        }
-
-        function checkAnswer(said) {
-            const correct = currentPlant.latino.toLowerCase();
-            
-            // Logica flessibile: controlla se la parola detta è contenuta nel nome corretto o viceversa
-            if (said.includes(correct) || correct.includes(said) || similarity(said, correct) > 0.7) {
-                score++;
-                document.getElementById('score').textContent = score;
-                document.body.style.backgroundColor = "#2ecc71"; // Verde
-                setTimeout(() => {
-                    document.body.style.backgroundColor = "var(--bg-color)";
-                    nextQuestion();
-                }, 800);
-            } else {
-                document.body.style.backgroundColor = "#e74c3c"; // Rosso
-                isGameActive = false;
-                recognition.stop();
-                setTimeout(() => {
-                    alert("SBAGLIATO!\nLa pianta era: " + currentPlant.latino + "\nPunteggio Finale: " + score);
-                    gameOver();
-                }, 100);
-            }
-        }
-
-        function skipPlant() {
-            if (skipsLeft > 0) {
-                skipsLeft--;
-                document.getElementById('skips').textContent = skipsLeft;
-                if (skipsLeft === 0) document.getElementById('skipBtn').disabled = true;
-                
-                document.body.style.backgroundColor = "var(--btn-orange)";
-                setTimeout(() => {
-                    document.body.style.backgroundColor = "var(--bg-color)";
-                    nextQuestion();
-                }, 400);
-            }
-        }
-
-        function gameOver() {
-            isGameActive = false;
-            recognition.stop();
-            document.body.style.backgroundColor = "var(--bg-color)";
-            document.getElementById('game-area').style.display = 'none';
-            document.getElementById('start-screen').classList.remove('hidden');
-        }
-
-        // Funzione opzionale per calcolare somiglianza tra stringhe
-        function similarity(s1, s2) {
-            let longer = s1.length < s2.length ? s2 : s1;
-            let shorter = s1.length < s2.length ? s1 : s2;
-            if (longer.length === 0) return 1.0;
-            return (longer.length - editDistance(longer, shorter)) / parseFloat(longer.length);
-        }
-
-        function editDistance(s1, s2) {
-            s1 = s1.toLowerCase(); s2 = s2.toLowerCase();
-            let costs = new Array();
-            for (let i = 0; i <= s1.length; i++) {
-                let lastValue = i;
-                for (let j = 0; j <= s2.length; j++) {
-                    if (i == 0) costs[j] = j;
-                    else if (j > 0) {
-                        let newValue = costs[j - 1];
-                        if (s1.charAt(i - 1) != s2.charAt(j - 1))
-                            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-                        costs[j - 1] = lastValue;
-                        lastValue = newValue;
-                    }
-                }
-                if (i > 0) costs[s2.length] = lastValue;
-            }
-            return costs[s2.length];
-        }
-    </script>
-</body>
-</html>
+            { latino: "Hydrangea Quercifolia", img: "img/hydrangea_querc
