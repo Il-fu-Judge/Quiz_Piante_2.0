@@ -21,7 +21,7 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            user-select: none;
+            overflow: hidden;
         }
 
         #start-screen {
@@ -31,13 +31,25 @@
             width: 100%; height: 100%;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
+            text-align: center;
         }
 
         #game-area {
             display: none;
             flex-direction: column;
             align-items: center;
-            width: 90%; max-width: 400px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .score-board {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-green);
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
         }
 
         .card-container {
@@ -47,40 +59,39 @@
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             overflow: hidden;
-            margin: 15px 0;
+            margin-bottom: 20px;
         }
 
-        .card-container img { width: 100%; height: 100%; object-fit: cover; }
+        .card-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-        /* PULSANTE PUSH-TO-TALK */
-        #micBtn {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: none;
+        /* Pulsante per controllare l'identificazione */
+        .btn-check {
+            padding: 20px;
+            width: 100%;
+            font-size: 1.2rem;
             background-color: var(--btn-blue);
             color: white;
-            font-weight: bold;
+            border: none;
+            border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
-            transition: transform 0.1s, background-color 0.3s;
-            touch-action: manipulation;
-            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 10px;
         }
 
-        #micBtn.active {
-            background-color: #e74c3c;
-            transform: scale(0.9);
-            box-shadow: 0 0 20px #e74c3c;
-        }
+        .btn-check:active { transform: scale(0.98); background-color: #2980b9; }
 
         .btn-skip {
-            margin-top: 20px;
             padding: 10px 20px;
-            background: var(--btn-orange);
+            background-color: var(--btn-orange);
             color: white;
             border: none;
             border-radius: 20px;
+            cursor: pointer;
             font-weight: bold;
         }
 
@@ -90,32 +101,25 @@
 <body>
 
     <div id="start-screen">
-        <h1 style="color: var(--primary-green)">Botanica Voice</h1>
-        <p>Tieni PREMUTO il cerchio blu per parlare</p>
-        <button style="padding: 15px 30px; background: var(--primary-green); color: white; border: none; border-radius: 50px; font-size: 1.2rem;" onclick="startGame()">INIZIA</button>
+        <h1 style="color: var(--primary-green)">Botanica Voice Challenge</h1>
+        <p>Il microfono è sempre attivo.<br>Dì il nome e premi il tasto per verificare.</p>
+        <button style="padding: 20px 40px; font-size: 1.5rem; background: var(--primary-green); color: white; border-radius: 50px; border: none; cursor: pointer;" onclick="startGame()">INIZIA GIOCO</button>
     </div>
 
     <div id="game-area">
-        <div style="width: 100%; display: flex; justify-content: space-between; font-weight: bold;">
+        <div class="score-board">
             <span>Punti: <span id="score">0</span></span>
             <span>Salti: <span id="skips">5</span></span>
         </div>
-
+        
         <div class="card-container">
             <img id="imageDisplay" src="" alt="Pianta">
         </div>
 
-        <button id="micBtn" 
-                onmousedown="startListen()" 
-                onmouseup="stopListen()" 
-                ontouchstart="startListen()" 
-                ontouchend="stopListen()">
-            TIENI PER<br>PARLARE
-        </button>
-
-        <p id="transcript" style="margin-top: 15px; color: #555; text-align: center; min-height: 1.2em;"></p>
+        <button class="btn-check" onclick="confirmAnswer()">VERIFICA RISPOSTA</button>
+        <button class="btn-skip" onclick="useSkip()">SALTA (-1 salto)</button>
         
-        <button class="btn-skip" onclick="handleError('SALTO')">SALTA PIANTA</button>
+        <p id="transcript" style="margin-top: 15px; color: #666; font-style: italic;">Sto ascoltando...</p>
     </div>
 
     <script>
@@ -162,89 +166,4 @@
             { latino: "Miscanthus Kleine Silberspinne", img: "img/miscanthus_kleine_silberspinne.jpg" },
             { latino: "Nassella Tenuifolia", img: "img/nassella_tenuifolia.jpg" },
             { latino: "Nepeta Faasenii", img: "img/nepeta_faasenii.jpg" },
-            { latino: "Osmanthus Acuifolium", img: "img/osmanthus_acuifolium.jpg" },
-            { latino: "Osmanthus Fragrance", img: "img/osmanthus_fragrance.jpg" },
-            { latino: "Osmanthus Fragrance Aurantiacus", img: "img/osmanthus_fragrance_aurantiacus.jpg" },
-            { latino: "Osmanthus Ilicifolium", img: "img/osmanthus_ilicifolium.jpg" },
-            { latino: "Pennisetum Alopecuroides", img: "img/pennisetum_alopecuroides.jpg" },
-            { latino: "Pieris Japonica", img: "img/pieris_japonica.jpg" },
-            { latino: "Pittosporum Heterophyllum", img: "img/pittosporum_heterophyllum.jpg" },
-            { latino: "Pittosporum Tenuifolium", img: "img/pittosporum_tenuifolium.jpg" },
-            { latino: "Pittosporum Tobira", img: "img/pittosporum_tobira.jpg" },
-            { latino: "Pittosporum Tobira Nanum", img: "img/pittosporum_tobira_nanum.jpg" },
-            { latino: "Prunus Cerasifera Nigra Pissardi", img: "img/prunus_cerasifera_nigra_pissardi.jpg" },
-            { latino: "Prunus Laurocerasus", img: "img/prunus_laurocerasus.jpg" },
-            { latino: "Prunus Lusitanica", img: "img/prunus_lusitanica.jpg" },
-            { latino: "Rhododendron Indicum", img: "img/rhododendron_indicum.jpg" },
-            { latino: "Rhododendron Mollis", img: "img/rhododendron_mollis.jpg" },
-            { latino: "Rudbeckia", img: "img/rudbeckia.jpg" },
-            { latino: "Salvia Microphylla", img: "img/salvia_microphylla.jpg" },
-            { latino: "Spirea Japonica", img: "img/spirea_japonica.jpg" },
-            { latino: "Verbena Bonariensis", img: "img/verbena_bonariensis.jpg" },
-            { latino: "Viburnum Carlesii", img: "img/viburnum_carlesii.jpg" },
-            { latino: "Viburnum Rytidophyllum", img: "img/viburnum_rytidophyllum.jpg" },
-            { latino: "Viburnum Tinus", img: "img/viburnum_tinus.jpg" },
-            { latino: "Weigela", img: "img/weigela.jpg" }
-        ];
-
-        let mazzo = [];
-        let currentPlant = null;
-        let score = 0;
-        let skipsLeft = 5;
-        let recognition;
-        let canProcess = false;
-
-        // Setup Riconoscimento
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.lang = 'it-IT';
-            recognition.continuous = true; // Resta "caldo"
-            recognition.interimResults = false;
-
-            recognition.onresult = (event) => {
-                if (!canProcess) return; // Se il tasto non è premuto, ignora
-                const result = event.results[event.results.length - 1][0].transcript.toLowerCase();
-                document.getElementById('transcript').textContent = "Hai detto: " + result;
-                checkAnswer(result);
-            };
-        }
-
-        function startGame() {
-            score = 0; skipsLeft = 5;
-            mazzo = [...pianteOriginali].sort(() => Math.random() - 0.5);
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('game-area').style.display = 'flex';
-            
-            // Accendiamo il microfono una volta sola all'inizio
-            try { recognition.start(); } catch(e) {}
-            
-            nextQuestion();
-        }
-
-        function nextQuestion() {
-            if (mazzo.length === 0) { alert("Finito!"); location.reload(); return; }
-            currentPlant = mazzo.pop();
-            document.getElementById('imageDisplay').src = currentPlant.img;
-            document.getElementById('score').textContent = score;
-            document.getElementById('skips').textContent = skipsLeft;
-            document.getElementById('transcript').textContent = "";
-        }
-
-        function startListen() {
-            canProcess = true;
-            document.getElementById('micBtn').classList.add('active');
-            document.getElementById('micBtn').textContent = "ASCOLTO...";
-        }
-
-        function stopListen() {
-            canProcess = false;
-            document.getElementById('micBtn').classList.remove('active');
-            document.getElementById('micBtn').textContent = "TIENI PER PARLARE";
-        }
-
-        function checkAnswer(said) {
-            const correct = currentPlant.latino.toLowerCase();
-            if (said.includes(correct) || correct.includes(said)) {
-                score++;
-                document.body.style.backgroundColor = "#2ecc71
+            { latino: "Os
