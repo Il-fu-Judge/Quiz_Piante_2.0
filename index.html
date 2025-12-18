@@ -26,7 +26,6 @@
             transition: background-color 0.3s;
         }
 
-        /* Schermate */
         #start-screen {
             position: absolute;
             z-index: 10;
@@ -50,7 +49,6 @@
             max-width: 400px;
         }
 
-        /* Bottoni */
         .btn {
             padding: 15px 35px;
             font-size: 1.2rem;
@@ -64,16 +62,13 @@
             width: 100%;
             max-width: 250px;
             margin: 10px 0;
+            text-transform: uppercase;
         }
-
-        .btn:active { transform: scale(0.95); }
 
         .btn-start { background-color: var(--primary-green); }
         .btn-guess { background-color: var(--btn-blue); }
         .btn-skip { background-color: var(--btn-orange); }
-        .btn-skip:disabled { background-color: #bdc3c7; cursor: not-allowed; box-shadow: none; }
-
-        /* Statistiche */
+        
         .stats-container {
             display: flex;
             justify-content: space-between;
@@ -81,10 +76,8 @@
             margin-bottom: 10px;
             font-weight: bold;
             color: var(--primary-green);
-            font-size: 1.1rem;
         }
 
-        /* Card Immagine */
         .card-container {
             width: 100%;
             aspect-ratio: 3/4;
@@ -102,9 +95,8 @@
             object-fit: cover;
         }
 
-        /* Feedback Vocale */
         .mic-active {
-            background: var(--error-red) !important;
+            background-color: var(--error-red) !important;
             animation: pulse 1.5s infinite;
         }
 
@@ -114,7 +106,6 @@
             font-style: italic;
             min-height: 1.5em;
             text-align: center;
-            font-size: 0.9rem;
         }
 
         @keyframes pulse {
@@ -129,8 +120,8 @@
 <body>
 
     <div id="start-screen">
-        <h1 style="color: var(--primary-green); margin-bottom: 10px;">Botanica Voice Challenge</h1>
-        <p style="margin-bottom: 30px;">Guarda la pianta e premi il tasto per indovinare.<br>Hai <b>5 salti</b> automatici!</p>
+        <h1 style="color: var(--primary-green);">Botanica Voice</h1>
+        <p>Premi il tasto "Indovina" per parlare.<br>Hai <b>5 salti</b> automatici.</p>
         <button class="btn btn-start" onclick="startGame()">INIZIA GIOCO</button>
     </div>
 
@@ -145,9 +136,9 @@
         </div>
 
         <button id="guessBtn" class="btn btn-guess" onclick="startGuessing()">🎤 INDOVINA</button>
-        <button id="skipBtn" class="btn btn-skip" onclick="manualSkip()">SALTA PIANTA</button>
+        <button id="skipBtn" class="btn btn-skip" onclick="handleError()">SALTA PIANTA</button>
         
-        <p id="transcript">Clicca "Indovina" per parlare</p>
+        <p id="transcript">Clicca per parlare</p>
     </div>
 
     <script>
@@ -169,16 +160,4 @@
             { latino: "Carex Oshimensis", img: "img/carex_oshimensis.jpg" },
             { latino: "Digitalis Ferruginea", img: "img/digitalis_ferruginea.jpg" },
             { latino: "Echinacea Purpurea", img: "img/echinacea_purpurea.jpg" },
-            { latino: "Eleagnus Ebbingei", img: "img/eleagnus_ebbingei.jpg" },
-            { latino: "Erica X Darleyensis", img: "img/erica_x_darleyensis.jpg" },
-            { latino: "Euonymus Alatus", img: "img/euonymus_alatus.jpg" },
-            { latino: "Euonymus Fortunei", img: "img/euonymus_fortunei.jpg" },
-            { latino: "Euonymus Japonicus", img: "img/euonymus_japonicus.jpg" },
-            { latino: "Euonymus Japonicus Pulchellus", img: "img/euonymus_japonicus_pulchellus.jpg" },
-            { latino: "Forsythia", img: "img/forsythia.jpg" },
-            { latino: "Gaura Lindheimeri", img: "img/gaura_lindheimeri.jpg" },
-            { latino: "Hydrangea Arborescens", img: "img/hydrangea_arborescens.jpg" },
-            { latino: "Hydrangea Aspera Sargentiana", img: "img/hydrangea_aspera_sargentiana.jpg" },
-            { latino: "Hydrangea Macrophylla", img: "img/hydrangea_macrophylla.jpg" },
-            { latino: "Hydrangea Paniculata", img: "img/hydrangea_paniculata.jpg" },
-            { latino: "Hydrangea Quercifolia", img: "img/hydrangea_querc
+            { latino: "Ele
