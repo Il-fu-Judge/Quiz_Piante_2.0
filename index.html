@@ -2,155 +2,168 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Botanica Quiz - Debug Mode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Botanica Voice Quiz</title>
     <style>
-        :root { --green: #2d5a27; --orange: #f39c12; --blue: #3498db; --bg: #e8f0e8; }
-        body { font-family: sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: white; padding: 20px; border-radius: 20px; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .btn { padding: 15px; width: 100%; border-radius: 50px; border: none; color: white; font-weight: bold; cursor: pointer; margin: 10px 0; font-size: 1.1rem; }
-        .btn-start { background: var(--green); }
-        .btn-guess { background: var(--blue); }
-        .btn-skip { background: var(--orange); }
-        .mic-on { background: #e74c3c !important; animation: pulse 1s infinite; }
-        .img-card { width: 100%; aspect-ratio: 3/4; background: #eee; border-radius: 15px; object-fit: cover; margin-bottom: 10px; }
+        :root {
+            --primary-green: #2d5a27;
+            --btn-orange: #f39c12;
+            --btn-blue: #3498db;
+            --bg-color: #e8f0e8;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #start-screen {
+            position: absolute;
+            z-index: 100;
+            background: white;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #game-area {
+            display: none; /* Nascondi all'inizio */
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .btn {
+            padding: 15px 35px;
+            font-size: 1.2rem;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            max-width: 250px;
+            margin: 10px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .btn-start { background-color: var(--primary-green); }
+        .btn-guess { background-color: var(--btn-blue); }
+        .btn-skip { background-color: var(--btn-orange); }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--primary-green);
+        }
+
+        .card-container {
+            width: 100%;
+            aspect-ratio: 3/4;
+            max-height: 350px;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .mic-active {
+            background-color: #e74c3c !important;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
         .hidden { display: none !important; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div id="start-screen" class="box">
-    <h1 style="color: var(--green)">Botanica Voice</h1>
-    <p>Riconosci le piante parlando.<br><b>5 salti disponibili.</b></p>
-    <button class="btn btn-start" onclick="startGame()">INIZIA ORA</button>
-</div>
-
-<div id="game-area" class="box hidden">
-    <div style="display: flex; justify-content: space-between; font-weight: bold; color: var(--green)">
-        <span>Punti: <span id="score">0</span></span>
-        <span>Salti: <span id="skips">5</span></span>
+    <div id="start-screen">
+        <h1 style="color: var(--primary-green);">Botanica Voice</h1>
+        <p>Guarda l'immagine e premi il tasto blu per rispondere.<br>Hai <b>5 salti</b> automatici.</p>
+        <button class="btn btn-start" onclick="startGame()">INIZIA GIOCO</button>
     </div>
-    
-    <img id="imageDisplay" class="img-card" src="" alt="Caricamento...">
-    
-    <button id="guessBtn" class="btn btn-guess" onclick="startListening()">🎤 INDOVINA</button>
-    <button class="btn btn-skip" onclick="handleError('MANUAL_SKIP')">SALTA</button>
-    
-    <p id="transcript" style="font-style: italic; color: #666;">Pronto...</p>
-</div>
 
-<script>
-// Elenco ridotto per test (tu puoi rimettere l'elenco completo qui)
-const pianteOriginali = [
-    { latino: "Abelia Grandiflora", img: "img/abelia_grandiflora.jpg" },
-    { latino: "Agapanthus Umbrellatus", img: "img/agapanthus_umbrellatus.jpg" },
-    { latino: "Aster", img: "img/aster.jpg" }
-    // ... aggiungi le altre qui ...
-];
+    <div id="game-area">
+        <div class="stats-container">
+            <div>Punti: <span id="score">0</span></div>
+            <div>Salti: <span id="skips">5</span></div>
+        </div>
 
-let mazzo = [];
-let currentPlant = null;
-let score = 0;
-let skipsLeft = 5;
-let recognition = null;
+        <div class="card-container">
+            <img id="imageDisplay" src="" alt="Pianta">
+        </div>
 
-// Prova a inizializzare subito per vedere se il browser supporta la funzione
-try {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-        recognition = new SpeechRecognition();
-        recognition.lang = 'it-IT';
-        recognition.continuous = false;
+        <button id="guessBtn" class="btn btn-guess" onclick="startListening()">🎤 INDOVINA</button>
+        <button id="skipBtn" class="btn btn-skip" onclick="handleError()">SALTA PIANTA</button>
+        
+        <p id="transcript" style="font-style: italic; color: #555; margin-top: 10px;">Clicca per parlare</p>
+    </div>
 
-        recognition.onresult = (event) => {
-            const result = event.results[0][0].transcript.toLowerCase();
-            document.getElementById('transcript').textContent = "Hai detto: " + result;
-            checkAnswer(result);
-        };
-
-        recognition.onend = () => {
-            const btn = document.getElementById('guessBtn');
-            btn.classList.remove('mic-on');
-            btn.textContent = "🎤 INDOVINA";
-        };
-    } else {
-        alert("Errore: Il tuo browser non supporta il riconoscimento vocale. Usa Chrome.");
-    }
-} catch (e) {
-    console.error("Errore inizializzazione vocale:", e);
-}
-
-function startGame() {
-    console.log("Gioco avviato"); // Controlla la console del browser (F12)
-    score = 0;
-    skipsLeft = 5;
-    mazzo = [...pianteOriginali].sort(() => Math.random() - 0.5);
-    
-    document.getElementById('start-screen').classList.add('hidden');
-    document.getElementById('game-area').classList.remove('hidden');
-    
-    nextQuestion();
-}
-
-function nextQuestion() {
-    if (mazzo.length === 0) {
-        alert("Complimenti! Mazzo finito.");
-        location.reload();
-        return;
-    }
-    currentPlant = mazzo.pop();
-    const imgElement = document.getElementById('imageDisplay');
-    
-    // Fallback se l'immagine non esiste
-    imgElement.onerror = () => { 
-        console.error("Immagine non trovata:", currentPlant.img);
-        document.getElementById('transcript').textContent = "Immagine mancante: " + currentPlant.img;
-    };
-    
-    imgElement.src = currentPlant.img;
-    document.getElementById('score').textContent = score;
-    document.getElementById('skips').textContent = skipsLeft;
-    document.getElementById('transcript').textContent = "In attesa...";
-}
-
-function startListening() {
-    if (!recognition) return;
-    try {
-        recognition.start();
-        const btn = document.getElementById('guessBtn');
-        btn.classList.add('mic-on');
-        btn.textContent = "🔴 TI ASCOLTO...";
-    } catch (e) {
-        console.warn("Riconoscimento già attivo o errore:", e);
-    }
-}
-
-function checkAnswer(said) {
-    const correct = currentPlant.latino.toLowerCase();
-    // Logica di confronto
-    if (said.includes(correct) || correct.includes(said)) {
-        score++;
-        document.body.style.backgroundColor = "#2ecc71";
-        setTimeout(() => {
-            document.body.style.backgroundColor = "#e8f0e8";
-            nextQuestion();
-        }, 800);
-    } else {
-        handleError();
-    }
-}
-
-function handleError(type) {
-    if (skipsLeft > 0) {
-        skipsLeft--;
-        alert("Sbagliato o Saltato!\nEra: " + currentPlant.latino);
-        nextQuestion();
-    } else {
-        alert("PARTITA FINITA!\nLa pianta era: " + currentPlant.latino);
-        location.reload();
-    }
-}
-</script>
-</body>
-</html>
+    <script>
+        const pianteOriginali = [
+            { latino: "Abelia Grandiflora", img: "img/abelia_grandiflora.jpg" },
+            { latino: "Agapanthus Umbrellatus", img: "img/agapanthus_umbrellatus.jpg" },
+            { latino: "Aster", img: "img/aster.jpg" },
+            { latino: "Berberis Julianae", img: "img/berberis_julianae.jpg" },
+            { latino: "Berberis Thunbergii", img: "img/berberis_thunbergii.jpg" },
+            { latino: "Buxus Pumila", img: "img/buxus_pumila.jpg" },
+            { latino: "Buxus Rotundifolia", img: "img/buxus_rotundifolia.jpg" },
+            { latino: "Buxus Sempervirens", img: "img/buxus_sempervirens.jpg" },
+            { latino: "Calluna Vulgaris", img: "img/calluna_vulgaris.jpg" },
+            { latino: "Camelia Japonica", img: "img/camelia_japonica.jpg" },
+            { latino: "Camelia Sasanqua", img: "img/camelia_sasanqua.jpg" },
+            { latino: "Camelia Sinensis", img: "img/camelia_sinensis.jpg" },
+            { latino: "Carex Comans", img: "img/carex_comans.jpg" },
+            { latino: "Carex Morrowii", img: "img/carex_morrowii.jpg" },
+            { latino: "Carex Oshimensis", img: "img/carex_oshimensis.jpg" },
+            { latino: "Digitalis Ferruginea", img: "img/digitalis_ferruginea.jpg" },
+            { latino: "Echinacea Purpurea", img: "img/echinacea_purpurea.jpg" },
+            { latino: "Eleagnus Ebbingei", img: "img/eleagnus_ebbingei.jpg" },
+            { latino: "Erica X Darleyensis", img: "img/erica_x_darleyensis.jpg" },
+            { latino: "Euonymus Alatus", img: "img/euonymus_alatus.jpg" },
+            { latino: "Euonymus Fortunei", img: "img/euonymus_fortunei.jpg" },
+            { latino: "Euonymus Japonicus", img: "img/euonymus_japonicus.jpg" },
+            { latino: "Euonymus Japonicus Pulchellus", img: "img/euonymus_japonicus_pulchellus.jpg" },
+            { latino: "Forsythia", img: "img/forsythia.jpg" },
+            { latino: "Gaura Lindheimeri", img: "img/gaura_lindheimeri.jpg" },
+            { latino: "Hydrangea Arborescens", img: "img/hydrangea_arborescens.jpg" },
+            { latino: "Hydrangea Aspera Sargentiana", img: "img/hydrangea_aspera_sargentiana.jpg" },
+            { latino: "Hydrangea Macrophylla", img: "img/hydrangea_macrophylla.jpg" },
+            { latino: "Hydrangea Paniculata", img: "img/hydrangea_paniculata.jpg" },
+            { latino: "Hydrangea Quercifolia", img: "img/hydrangea_quercifolia.jpg" },
+            { latino: "Hydrangea Serrata", img: "img/hydrangea_serrata.jpg" },
+            { latino: "Ilex Acquifolium", img: "img/ilex_acquifolium.jpg" },
+            { latino: "Ilex Crenata", img: "img/ilex_crenata.jpg" },
+            { latino: "Kniphofia Uvaria", img: "img/kniphofia_uvaria.jpg" },
+            { latino: "Lagerstroemia Indica", img: "img/lagerstroemia_indica.jpg" },
+            { latino: "Laurus Nobilis", img: "img/laurus_nobilis.jpg" },
+            { latino: "Ligustrum Lucidum", img: "img/ligustrum_lucidum.jpg" },
+            { latino: "Lonicera Pileata", img: "img
