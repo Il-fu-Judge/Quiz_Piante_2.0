@@ -150,7 +150,8 @@
 
         <div id="micStatus" class="mic-status">Attivazione microfono...</div>
         <p id="transcript">Ti ascolto...</p>
-        
+
+        <button id="speakBtn" class="btn btn-speak" onclick="startListening()">PARLA</button>   
         <button id="skipBtn" class="btn btn-skip" onclick="skipPlant()">SALTA PIANTA</button>
     </div>
 
@@ -247,10 +248,6 @@
             recognition.onerror = (e) => {
                 if (e.error === 'not-allowed') alert("Permesso microfono negato!");
             };
-
-            recognition.onend = () => {
-                if (isGameActive) startListening();
-            };
         } else {
             alert("Il tuo browser non supporta il riconoscimento vocale. Usa Chrome o Safari.");
         }
@@ -278,7 +275,11 @@
             currentPlant = mazzo.pop();
             document.getElementById('imageDisplay').src = currentPlant.img;
             document.getElementById('transcript').textContent = "In attesa della tua voce...";
-            startListening();
+        }
+
+
+        function stopListening(){
+            recognition.stop();
         }
 
         function startListening() {
